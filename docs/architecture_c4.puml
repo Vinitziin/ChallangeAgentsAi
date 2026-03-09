@@ -1,0 +1,55 @@
+@startuml Multi-Agent Assistant Architecture (C4 Model)
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+
+title C4 Model: Multi-Agent Conversational Assistant
+
+Person(user, "User", "Interage com o assistente via chat para consultar dados, previsão do tempo ou web")
+
+System_Boundary(c1, "Multi-Agent System") {
+    Container(ui, "Streamlit UI", "Python", "Frontend conversacional com painel de debug lateral", $tags="web")
+    
+    System_Boundary(langgraph, "LangGraph Orchestrator") {
+        Container(planner, "Planner Node", "Python", "Roteador inteligente. Utiliza LLM para decidir qual agente acionar")
+        Container(executor, "Executor Node", "Python", "Invoca o agente selecionado passando as mensagens")
+    }
+
+    System_Boundary(agents, "Especialistas (ReAct Tools)") {
+        Container(agent_search, "Web Search", "Python", "Pesquisa a internet")
+        Container(agent_vector, "Vector DB", "Python", "Busca base de conhecimento")
+        Container(agent_sql, "SQL Agent", "Python", "Consultas em banco relacional")
+        Container(agent_weather, "Weather", "Python", "Consulta clima")
+    }
+}
+
+System_Ext(tavily, "Tavily API", "Motor de busca focado em AI")
+System_Ext(openai, "OpenAI API", "GPT-4o-mini (LLM e Embeddings)")
+System_Ext(openweathermap, "OpenWeatherMap", "Dados climáticos em tempo real")
+
+System_Boundary(data, "Infrastructure") {
+    ContainerDb(postgres, "PostgreSQL 16", "Database", "Tabelas de negócio (clientes, produtos, ordens)")
+    ContainerDb(chroma, "ChromaDB", "Vector DB", "Armazena chunks dos documentos (FAQ, RH)")
+}
+
+Rel(user, ui, "Envia mensagem", "HTTP")
+Rel(ui, planner, "Encaminha Histórico", "Python Obj")
+Rel(planner, executor, "JSON Routeing", "Python Obj")
+
+Rel(executor, agent_search, "Invoca")
+Rel(executor, agent_vector, "Invoca")
+Rel(executor, agent_sql, "Invoca")
+Rel(executor, agent_weather, "Invoca")
+
+Rel(agent_search, tavily, "Fetch (JSON)")
+Rel(agent_vector, chroma, "Similarity Search (Cosine)")
+Rel(agent_sql, postgres, "Raw SQL (Read-Only)")
+Rel(agent_weather, openweathermap, "GET (JSON)")
+
+Rel(planner, openai, "Decide Rota")
+Rel(agent_search, openai, "Interpreta")
+Rel(agent_vector, openai, "Interpreta")
+Rel(agent_sql, openai, "Interpreta")
+Rel(agent_weather, openai, "Interpreta")
+
+@enduml
