@@ -99,6 +99,8 @@ docker compose exec app python -m app.vector_db.ingest
 
 ## Estrutura do Projeto
 
+> **Observação:** Eu criei essa branch para mostrar como eu organizaria a estrutura do projeto, mas é uma escolha pessoal acredito que dessa forma ficaria mais organizado.
+
 ```
 /app
   /agents        # Agentes especializados (ReAct)
