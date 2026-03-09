@@ -1,0 +1,76 @@
+@startuml Multi-Agent Assistant Architecture
+
+!theme plain
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam packageStyle rectangle
+
+title Arquitetura Multi-Agente (Top-Down Flow)
+
+' Camada 1: Interface
+package "Camada 1: Interface" <<Frame>> {
+    [Streamlit Chat (UI)] as UI
+}
+
+' Camada 2: Orquestração
+package "Camada 2: Orquestrador LangGraph" <<Frame>> {
+    [1. User Node\n(Recebe Mensagem)] as UN
+    [2. Planner Node\n(LLM Roteador)] as PN
+    [4. Memory\n(Histórico)] as MN
+    [3. Executor\n(Integração)] as EN
+    
+    UN -right-> PN : " Analisa"
+    PN -down-> EN : " Decide Agente"
+    EN -right-> MN : " Salva"
+    MN -up-> UN : " Resposta"
+}
+
+' Camada 3: Agentes
+package "Camada 3: Agentes Especialistas (ReAct)" <<Frame>> {
+    [Web Search Agente] as WSA
+    [Vector DB Agente] as VDA
+    [SQL Agente (Read-Only)] as SQA
+    [Weather Agente] as WEA
+}
+
+' Camada 4: Infraestrutura e APIs
+package "Camada 4: Infra e APIs Externas" <<Frame>> {
+    [Tavily API\n(Busca Web)] as Tavily
+    database "ChromaDB\n(Vetores)" as Chroma
+    database "PostgreSQL\n(Dados)" as Postgres
+    [OpenWeatherMap] as OWM
+}
+
+' Forçando hierarquia estrita (linhas invisíveis)
+UI -[hidden]down-> UN
+EN -[hidden]down-> WSA
+WSA -[hidden]down-> Tavily
+VDA -[hidden]down-> Chroma
+SQA -[hidden]down-> Postgres
+WEA -[hidden]down-> OWM
+
+' Conexões Reais: UI -> Orquestrador
+UI ---> UN : Pergunta do Usuário
+
+' Conexões Reais: Orquestrador -> Agentes
+EN ---> WSA : Executa Consulta
+EN ---> VDA : Executa Consulta
+EN ---> SQA : Executa Consulta
+EN ---> WEA : Executa Consulta
+
+' Conexões Reais: Agentes -> Fontes
+WSA ---> Tavily 
+VDA ---> Chroma 
+SQA ---> Postgres 
+WEA ---> OWM 
+
+' LLM Central (Compartilhada)
+cloud "OpenAI (GPT-4o-mini)" as OpenAI
+PN .right.> OpenAI : "Raciocina Rota"
+WSA .down.> OpenAI
+VDA .down.> OpenAI
+SQA .down.> OpenAI
+WEA .down.> OpenAI
+
+@enduml

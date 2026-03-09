@@ -1,115 +1,146 @@
-### 1. Propósito do desafio
+# 🤖 Multi-Agent Conversational Assistant
 
-Desenvolver **um mini‑assistente conversacional** (RAG‑based) que orquestra múltiplas _tools_ via **LangChain + LangGraph** e oferece **interface gráfica** para o usuário final.  
-A entrega será avaliada pelo nosso time de engenharia durante uma entrevista técnica.
-
----
-
-### 2. Requisitos funcionais (obrigatórios)
-
-| Cenário | O agente deve ser capaz de… | Sugestões de implementação |
-|---------|----------------------------|----------------------------|
-| **Busca na Web** | Receber perguntas no chat, executar buscas no Google e retornar informações consolidadas com links‑fonte. | SerpAPI, Tavily ou Google CSE wrapper do LangChain |
-| **Base vetorial** | Fazer _similarity search_ em embeddings previamente carregados (docs ou FAQs). | Chroma, Qdrant ou Azure AI Search (se optar por Foundry) |
-| **PostgreSQL** | Executar queries parametrizadas e retornar resultados formatados. | `SQLDatabaseToolkit` do LangChain |
-| **Previsão do tempo** | Consultar uma API pública (ex. OpenWeatherMap) e responder em linguagem natural. | HTTP tool via LangChain |
-
-Todas as funções devem ser **evocadas pelo modelo** conforme o _prompt_ do usuário, sem botões dedicados.
-As funcionalidades devem ser expressas em multi-agents!
+Mini-assistente conversacional RAG-based com **4 agentes especializados** orquestrados via **LangGraph**, interface **Streamlit** e infraestrutura **Docker**.
 
 ---
 
-### 3. Requisitos não‑funcionais (obrigatórios)
-
-1. **Organização do código**  
-```BASH
-/app
-/agents
-/graph # nós & edges do LangGraph
-/tools
-/vector_db
-/ui # frontend
-/tests
-docker-compose.yml
-README.md
-```
-
-2. **Interface gráfica** – escolha livre (ex.: Streamlit, React + FastAPI, Gradio).  
-- Chats em tempo real (streaming).  
-- Logs de debug em painel lateral ou console.  
-3. **Docker first** – `docker compose up` precisa trazer tudo (Postgres, vetorDB, serviço da app).  
-4. **LangGraph** obrigatório **caso não adote Azure Foundry**.
-
----
-
-### 4. Pontos extra (bonus)
-
-| Tema | Exemplo prático que vale pontos |
-|------|---------------------------------|
-| **Azure Foundry** | Provisionar agentes como workflows do Foundry; usar Azure AI Search como vetorDB e Azure SQL. |
-| **Avaliação automatizada** | Testes de _prompt‑eval_ via `langchain-bench`, `ragas` ou `LangSmith` (datasets simples simulando perguntas). |
-| **Arquitetura** | PlantUML ou C4 diagram no repo (`docs/architecture.puml` + PNG gerado). |
-| **Rationale técnico** | README explicando escolhas de libs, trade‑offs, custos, segurança (rate‑limit da API do tempo, sanitização de SQL, etc.). |
-
----
-
-### 5. Diretrizes de implementação
-
-- **Agents**  
-- _ReAct_ ou _Plan‑and‑Execute_ pattern.  
-- Cada _tool_ em isolamento: entrada dataclass, saída tipada.  
-- **LangGraph**  
-- Nós: `UserNode`, `PlannerNode`, `ExecutorNode`, `MemoryNode`.  
-- Edge de fallback → `SearchTool` para perguntas sem contexto.  
-- **Persistência vetorial**  
-- Embeddings: `OpenAIEmbeddings` ou `azure_openai` caso Foundry.  
-- Alimentar via script `python ingest.py`.  
-- **Segurança**  
-- Variáveis sensíveis (.env) montadas no container.  
-- Limitar queries SQL (whitelist ou `sqlglot` parse‑safe).  
-- **Testes**  
-- Unitário por tool (`pytest`).  
-- _E2E_ ≥ 2 casos cobrindo fluxo completo (pergunta → resposta).  
-- **Observabilidade**  
-- Logs estruturados (JSON) + simples tracer (`LangChainTracer` ou OpenTelemetry).
-
----
-
-### 6. Exemplo de `docker-compose.yml` (mínimo)
-
-```yaml
-version: "3.9"
-services:
-app:
- build: .
- env_file: .env
- ports: ["8501:8501"]          # Streamlit
- depends_on: [postgres, chroma]
-
-postgres:
- image: postgres:16
- environment:
-   POSTGRES_PASSWORD: postgres
- volumes: ["pgdata:/var/lib/postgresql/data"]
-
-chroma:
- image: chromadb/chroma
- ports: ["8000:8000"]
-
-volumes:
-pgdata:
+## Arquitetura
 
 ```
+┌─────────────────────────────────────────────────────────┐
+│                    Streamlit UI (8501)                   │
+│              Chat + Debug Sidebar + Streaming            │
+└────────────────────────┬────────────────────────────────┘
+                         │
+              ┌──────────▼──────────┐
+              │    LangGraph Grafo   │
+              │                      │
+              │  UserNode            │
+              │    ↓                 │
+              │  PlannerNode (LLM)   │
+              │    ↓ routing         │
+              │  ExecutorNode        │
+              │    ↓                 │
+              │  MemoryNode          │
+              └──┬───┬───┬───┬──────┘
+                 │   │   │   │
+    ┌────────────┘   │   │   └────────────┐
+    ▼                ▼   ▼                ▼
+ 🌐 Web Search  📚 Vector DB  🗄️ SQL   🌤️ Weather
+  (Tavily)       (ChromaDB)   (Postgres) (OpenWeather)
+```
 
-### 8. Como enviar
-Repositório Git público ou privado com acesso ao avaliador.
+### Fluxo Multi-Agent
 
-Instruções no README:
-```yaml
-git clone
+1. **UserNode** — recebe a mensagem do usuário
+2. **PlannerNode** — LLM analisa a pergunta e decide qual agente acionar (roteamento inteligente)
+3. **ExecutorNode** — invoca o agente especializado selecionado
+4. **MemoryNode** — armazena o contexto da conversa
+5. **Fallback** — se nenhum agente é adequado, aciona busca web
+
+---
+
+## Stack Tecnológica
+
+| Componente | Tecnologia | Justificativa |
+|---|---|---|
+| LLM | OpenAI gpt-4o-mini | Custo baixo, melhor suporte LangChain |
+| UI | Streamlit | Chat nativo com streaming, rápido de desenvolver |
+| Orquestração | LangGraph | Requisito do desafio; grafo de estados flexível |
+| Base Vetorial | ChromaDB | Setup simples, container Docker pronto |
+| Busca Web | Tavily | Integração nativa LangChain, tier gratuito |
+| Banco de Dados | PostgreSQL 16 | Robusto, padrão de mercado |
+| Clima | OpenWeatherMap | API gratuita e bem documentada |
+
+### Trade-offs
+
+- **Streamlit vs React**: Streamlit é mais rápido de implementar, mas menos flexível para UIs complexas. Para um assistente de chat, é ideal.
+- **ChromaDB vs Qdrant**: ChromaDB tem setup mais simples, Qdrant tem melhor performance em produção. Para demo, ChromaDB é suficiente.
+- **gpt-4o-mini vs gpt-4o**: Mini tem custo ~20x menor com qualidade adequada para roteamento e RAG.
+
+### Segurança
+
+- **SQL**: Queries validadas via `sqlglot` — apenas `SELECT` permitido, tabelas em whitelist.
+- **Secrets**: Variáveis sensíveis em `.env`, nunca commitadas (`.gitignore`).
+- **API rate-limit**: OpenWeatherMap limita 60 req/min no tier free; Tavily 1000 req/mês no free.
+
+---
+
+## Quick Start
+
+### Pré-requisitos
+
+- Docker e Docker Compose
+- Chaves de API: OpenAI, Tavily, OpenWeatherMap
+
+### Setup
+
+```bash
+git clone <repo-url>
+cd ChallangeAgentsAi
 
 cp .env.example .env
+# Edite o .env com suas API keys
 
 docker compose up --build
 ```
-Não esquecer da URL da UI.
+
+### Ingestão de documentos (base vetorial)
+
+```bash
+docker compose exec app python -m app.vector_db.ingest
+```
+
+### Acesso
+
+**UI:** http://localhost:8501
+
+---
+
+## Estrutura do Projeto
+
+```
+/app
+  /agents        # Agentes especializados (ReAct)
+  /graph         # Nós e edges do LangGraph
+  /tools         # Tools isoladas (entrada/saída tipada)
+  /vector_db     # Script de ingestão
+  /ui            # Interface Streamlit
+/tests
+  /test_tools    # Testes unitários por tool
+  /test_e2e      # Testes end-to-end
+/data
+  /sample_docs   # Documentos para ingestão vetorial
+/docs            # Diagrama de arquitetura
+docker-compose.yml
+Dockerfile
+init.sql         # Seed do PostgreSQL
+```
+
+---
+
+## Testes
+
+```bash
+# Unitários (com mocks, sem precisar de APIs reais)
+docker compose exec app pytest tests/test_tools/ -v
+
+# Estrutura dos testes
+tests/
+  test_tools/
+    test_weather_api.py      # Mock HTTP → valida parsing
+    test_sql_query.py        # Valida sanitização SQL (whitelist, bloqueio de DROP/DELETE)
+    test_tavily_search.py    # Mock Tavily → valida formato de saída
+    test_chroma_search.py    # Mock ChromaDB → valida similarity search
+```
+
+---
+
+## Exemplos de Uso
+
+| Pergunta | Agente acionado |
+|---|---|
+| "Qual o tempo em São Paulo?" | 🌤️ Weather |
+| "Pesquise sobre inteligência artificial generativa" | 🌐 Web Search |
+| "Qual o horário de funcionamento da loja?" | 📚 Vector DB |
+| "Quantos pedidos temos com status delivered?" | 🗄️ SQL |

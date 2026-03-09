@@ -1,0 +1,35 @@
+services:
+  app:
+    build: .
+    env_file: .env
+    ports:
+      - "8501:8501"
+    depends_on:
+      - postgres
+      - chroma
+    volumes:
+      - ./app:/workspace/app
+      - ./data:/workspace/data
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: assistant_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadata:/chroma/chroma
+
+volumes:
+  pgdata:
+  chromadata:
