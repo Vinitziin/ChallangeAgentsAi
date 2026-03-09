@@ -1,7 +1,7 @@
 """Unit tests for the ChromaDB search tool."""
 
 from unittest.mock import patch, MagicMock
-from app.tools.chroma_search import chroma_search
+from tools.chroma_search import chroma_search
 
 
 MOCK_QUERY_RESULTS = {
@@ -11,8 +11,8 @@ MOCK_QUERY_RESULTS = {
 }
 
 
-@patch("app.tools.chroma_search.OpenAIEmbeddings")
-@patch("app.tools.chroma_search._get_chroma_collection")
+@patch("tools.chroma_search.OpenAIEmbeddings")
+@patch("tools.chroma_search._get_chroma_collection")
 def test_chroma_search_returns_documents(mock_collection_fn, mock_embeddings_class):
     mock_embeddings = MagicMock()
     mock_embeddings.embed_query.return_value = [0.1] * 1536
@@ -30,8 +30,8 @@ def test_chroma_search_returns_documents(mock_collection_fn, mock_embeddings_cla
     assert results[0]["distance"] == 0.25
 
 
-@patch("app.tools.chroma_search.OpenAIEmbeddings")
-@patch("app.tools.chroma_search._get_chroma_collection")
+@patch("tools.chroma_search.OpenAIEmbeddings")
+@patch("tools.chroma_search._get_chroma_collection")
 def test_chroma_search_empty_results(mock_collection_fn, mock_embeddings_class):
     mock_embeddings = MagicMock()
     mock_embeddings.embed_query.return_value = [0.1] * 1536

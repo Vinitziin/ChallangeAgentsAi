@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import create_react_agent
 
 from app.config import settings
-from app.tools.sql_query import sql_query
+from tools.sql_query import sql_query
 
 SYSTEM_PROMPT = (
     "Você é um assistente especializado em consultas SQL no banco de dados PostgreSQL. "

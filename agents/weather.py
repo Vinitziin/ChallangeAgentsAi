@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import create_react_agent
 
 from app.config import settings
-from app.tools.weather_api import get_weather
+from tools.weather_api import get_weather
 
 SYSTEM_PROMPT = (
     "Você é um assistente de previsão do tempo. "

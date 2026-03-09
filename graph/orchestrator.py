@@ -5,8 +5,8 @@ from typing import Any
 
 from langgraph.graph import StateGraph, START, END
 
-from app.graph.nodes import user_node, planner_node, executor_node, memory_node
-from app.graph.edges import route_to_executor
+from graph.nodes import user_node, planner_node, executor_node, memory_node
+from graph.edges import route_to_executor
 
 logger = logging.getLogger(__name__)
 

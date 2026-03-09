@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import create_react_agent
 
 from app.config import settings
-from app.tools.chroma_search import chroma_search
+from tools.chroma_search import chroma_search
 
 SYSTEM_PROMPT = (
     "Você é um assistente que consulta a base de conhecimento interna da empresa. "

@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import create_react_agent
 
 from app.config import settings
-from app.tools.tavily_search import tavily_search
+from tools.tavily_search import tavily_search
 
 SYSTEM_PROMPT = (
     "Você é um assistente especializado em pesquisa na web. "

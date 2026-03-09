@@ -99,15 +99,13 @@ docker compose exec app python -m app.vector_db.ingest
 
 ## Estrutura do Projeto
 
-> **Observação:** Eu criei essa branch para mostrar como eu organizaria a estrutura do projeto, mas é uma escolha pessoal acredito que dessa forma ficaria mais organizado.
-
 ```
-/app
-  /agents        # Agentes especializados (ReAct)
-  /graph         # Nós e edges do LangGraph
-  /tools         # Tools isoladas (entrada/saída tipada)
-  /vector_db     # Script de ingestão
-  /ui            # Interface Streamlit
+/app             # Entrypoints e config (main.py, config.py) 
+/agents          # Agentes especializados (ReAct)
+/graph           # Nós e edges do LangGraph
+/tools           # Tools isoladas (entrada/saída tipada)
+/vector_db       # Script de ingestão
+/ui              # Interface Streamlit
 /tests
   /test_tools    # Testes unitários por tool
   /test_e2e      # Testes end-to-end

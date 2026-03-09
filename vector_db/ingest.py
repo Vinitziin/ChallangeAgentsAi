@@ -16,7 +16,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.config import settings
-from app.tools.chroma_search import COLLECTION_NAME
+from tools.chroma_search import COLLECTION_NAME
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

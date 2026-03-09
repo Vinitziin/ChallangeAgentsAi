@@ -74,10 +74,10 @@ def planner_node(state: dict[str, Any]) -> dict[str, Any]:
 
 def executor_node(state: dict[str, Any]) -> dict[str, Any]:
     """Execute the selected agent and store the result."""
-    from app.agents.web_search import create_web_search_agent
-    from app.agents.vector_db import create_vector_db_agent
-    from app.agents.sql_agent import create_sql_agent
-    from app.agents.weather import create_weather_agent
+    from agents.web_search import create_web_search_agent
+    from agents.vector_db import create_vector_db_agent
+    from agents.sql_agent import create_sql_agent
+    from agents.weather import create_weather_agent
 
     agent_map = {
         "web_search": create_web_search_agent,

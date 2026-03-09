@@ -7,7 +7,7 @@ import time
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
 
-from app.graph.orchestrator import build_graph
+from graph.orchestrator import build_graph
 
 logging.basicConfig(
     level=logging.INFO,

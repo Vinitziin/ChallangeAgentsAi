@@ -1,6 +1,6 @@
 """Unit tests for the SQL query tool — validation logic."""
 
-from app.tools.sql_query import _validate_sql
+from tools.sql_query import _validate_sql
 
 
 def test_select_on_allowed_table_is_valid():

@@ -8,8 +8,7 @@ services:
       - postgres
       - chroma
     volumes:
-      - ./app:/workspace/app
-      - ./data:/workspace/data
+      - .:/workspace
 
   postgres:
     image: postgres:16

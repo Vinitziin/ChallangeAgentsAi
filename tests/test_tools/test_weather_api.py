@@ -1,7 +1,7 @@
 """Unit tests for the weather API tool."""
 
 from unittest.mock import patch, MagicMock
-from app.tools.weather_api import get_weather
+from tools.weather_api import get_weather
 
 
 MOCK_WEATHER_RESPONSE = {
@@ -16,7 +16,7 @@ MOCK_WEATHER_RESPONSE = {
 }
 
 
-@patch("app.tools.weather_api.requests.get")
+@patch("tools.weather_api.requests.get")
 def test_get_weather_returns_structured_data(mock_get):
     mock_response = MagicMock()
     mock_response.json.return_value = MOCK_WEATHER_RESPONSE
@@ -32,7 +32,7 @@ def test_get_weather_returns_structured_data(mock_get):
     assert result["wind_speed"] == 3.5
 
 
-@patch("app.tools.weather_api.requests.get")
+@patch("tools.weather_api.requests.get")
 def test_get_weather_calls_api_with_correct_params(mock_get):
     mock_response = MagicMock()
     mock_response.json.return_value = MOCK_WEATHER_RESPONSE

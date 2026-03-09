@@ -1,7 +1,7 @@
 """Unit tests for the Tavily search tool."""
 
 from unittest.mock import patch, MagicMock
-from app.tools.tavily_search import tavily_search
+from tools.tavily_search import tavily_search
 
 
 MOCK_SEARCH_RESULTS = [
@@ -10,7 +10,7 @@ MOCK_SEARCH_RESULTS = [
 ]
 
 
-@patch("app.tools.tavily_search.TavilySearchResults")
+@patch("tools.tavily_search.TavilySearchResults")
 def test_tavily_search_returns_results(mock_class):
     mock_instance = MagicMock()
     mock_instance.invoke.return_value = MOCK_SEARCH_RESULTS
@@ -22,7 +22,7 @@ def test_tavily_search_returns_results(mock_class):
     assert results[0]["url"] == "https://example.com/1"
 
 
-@patch("app.tools.tavily_search.TavilySearchResults")
+@patch("tools.tavily_search.TavilySearchResults")
 def test_tavily_search_passes_query(mock_class):
     mock_instance = MagicMock()
     mock_instance.invoke.return_value = []
