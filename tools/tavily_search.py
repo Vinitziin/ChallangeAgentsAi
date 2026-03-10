@@ -30,7 +30,16 @@ def tavily_search(query: str) -> list[dict[str, Any]]:
         query: The search query string.
 
     Returns:
-        A list of search results with url and content.
+        A list of search results with title, url and content.
     """
     search = TavilySearchResults(max_results=5)
-    return search.invoke(query)
+    raw_results = search.invoke(query)
+
+    return [
+        SearchResult(
+            title=r.get("title", ""),
+            url=r.get("url", ""),
+            content=r.get("content", ""),
+        ).__dict__
+        for r in raw_results
+    ]
