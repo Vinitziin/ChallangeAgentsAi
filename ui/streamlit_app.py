@@ -91,50 +91,70 @@ def run_app():
             st.markdown(user_input)
 
         with st.chat_message("assistant"):
-            with st.spinner("Pensando..."):
-                start = time.time()
+            start = time.time()
+            status_placeholder = st.empty()
+            response_placeholder = st.empty()
 
-                graph_input = {
-                    "messages": [HumanMessage(content=user_input)],
-                }
+            graph_input = {
+                "messages": [HumanMessage(content=user_input)],
+            }
 
-                try:
-                    result = st.session_state.graph.invoke(graph_input)
-                    elapsed = time.time() - start
+            try:
+                agent_used = "unknown"
+                reasoning = ""
+                response_text = ""
 
-                    response_text = extract_last_ai_message(result.get("messages", []))
-                    agent_used = result.get("agent_used", "unknown")
-                    reasoning = result.get("reasoning", "")
+                for node_output in st.session_state.graph.stream(graph_input):
+                    node_name = list(node_output.keys())[0]
+                    node_data = node_output[node_name]
 
-                    st.markdown(response_text)
-                    label = AGENT_LABELS.get(agent_used, agent_used)
-                    st.caption(f"Respondido por: {label}")
+                    if node_name == "planner":
+                        agent_used = node_data.get("selected_agent", "unknown")
+                        reasoning = node_data.get("reasoning", "")
+                        label = AGENT_LABELS.get(agent_used, agent_used)
+                        status_placeholder.caption(f"⏳ Consultando {label}...")
 
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": response_text,
-                        "agent": agent_used,
-                    })
+                    elif node_name == "executor":
+                        messages = node_data.get("messages", [])
+                        response_text = extract_last_ai_message(messages)
+                        status_placeholder.empty()
+                        response_placeholder.markdown(response_text)
 
-                    st.session_state.debug_logs.append({
-                        "agent": agent_used,
-                        "reasoning": reasoning,
-                        "elapsed": elapsed,
-                        "query": user_input,
-                    })
-                    st.rerun()
+                elapsed = time.time() - start
 
-                except Exception as e:
-                    elapsed = time.time() - start
-                    error_msg = f"Erro ao processar: {str(e)}"
-                    st.error(error_msg)
-                    logger.exception("Error in graph execution")
+                if not response_text:
+                    response_text = "Desculpe, não consegui gerar uma resposta."
+                    response_placeholder.markdown(response_text)
 
-                    st.session_state.debug_logs.append({
-                        "agent": "error",
-                        "reasoning": error_msg,
-                        "elapsed": elapsed,
-                        "query": user_input,
-                        "error": str(e),
-                    })
-                    st.rerun()
+                label = AGENT_LABELS.get(agent_used, agent_used)
+                st.caption(f"Respondido por: {label}")
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": response_text,
+                    "agent": agent_used,
+                })
+
+                st.session_state.debug_logs.append({
+                    "agent": agent_used,
+                    "reasoning": reasoning,
+                    "elapsed": elapsed,
+                    "query": user_input,
+                })
+                st.rerun()
+
+            except Exception as e:
+                elapsed = time.time() - start
+                error_msg = f"Erro ao processar: {str(e)}"
+                status_placeholder.empty()
+                st.error(error_msg)
+                logger.exception("Error in graph execution")
+
+                st.session_state.debug_logs.append({
+                    "agent": "error",
+                    "reasoning": error_msg,
+                    "elapsed": elapsed,
+                    "query": user_input,
+                    "error": str(e),
+                })
+                st.rerun()
