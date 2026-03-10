@@ -15,7 +15,7 @@ PLANNER_PROMPT = """Você é um roteador inteligente. Analise a pergunta do usu�
 
 Agentes disponíveis:
 - "web_search": Para perguntas sobre eventos atuais, notícias, informações gerais da internet.
-- "vector_db": Para perguntas sobre documentação interna, FAQs da empresa, base de conhecimento.
+- "vector_db": Para perguntas sobre documentação interna da empresa (TechStore), FAQs da empresa, base de conhecimento.
 - "sql_agent": Para perguntas sobre dados do banco (clientes, produtos, pedidos), relatórios, métricas.
 - "weather": Para perguntas sobre clima, temperatura, previsão do tempo de cidades.
 
