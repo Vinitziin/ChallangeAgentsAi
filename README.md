@@ -88,7 +88,7 @@ docker compose up --build
 ### Ingestão de documentos (base vetorial)
 
 ```bash
-docker compose exec app python -m app.vector_db.ingest
+docker compose exec app python -m vector_db.ingest
 ```
 
 ### Acesso
