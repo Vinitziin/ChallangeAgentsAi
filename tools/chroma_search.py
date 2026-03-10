@@ -37,7 +37,7 @@ def chroma_search(query: str) -> list[dict[str, Any]]:
 
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=3,
+        n_results=5,
     )
 
     documents = []
