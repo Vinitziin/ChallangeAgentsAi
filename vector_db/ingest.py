@@ -21,7 +21,7 @@ from tools.chroma_search import COLLECTION_NAME
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DOCS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "sample_docs")
+DOCS_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "sample_docs")
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
