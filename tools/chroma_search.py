@@ -9,11 +9,22 @@ from langchain_openai import OpenAIEmbeddings
 from app.config import settings
 
 COLLECTION_NAME = "knowledge_base"
+CHROMA_PERSIST_DIR = "/workspace/chroma_data"
+
+
+def _get_chroma_client() -> chromadb.ClientAPI:
+    """Return a ChromaDB client, preferring HTTP server and falling back to local persistent storage."""
+    try:
+        client = chromadb.HttpClient(host=settings.CHROMA_HOST, port=settings.CHROMA_PORT)
+        client.heartbeat()
+        return client
+    except Exception:
+        return chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
 
 
 def _get_chroma_collection() -> chromadb.Collection:
     """Connect to ChromaDB and return the knowledge base collection."""
-    client = chromadb.HttpClient(host=settings.CHROMA_HOST, port=settings.CHROMA_PORT)
+    client = _get_chroma_client()
     return client.get_or_create_collection(name=COLLECTION_NAME)
 
 

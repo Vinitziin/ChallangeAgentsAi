@@ -16,7 +16,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.config import settings
-from tools.chroma_search import COLLECTION_NAME
+from tools.chroma_search import COLLECTION_NAME, _get_chroma_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ def ingest():
     embeddings = OpenAIEmbeddings(api_key=settings.OPENAI_API_KEY)
     vectors = embeddings.embed_documents(all_chunks)
 
-    client = chromadb.HttpClient(host=settings.CHROMA_HOST, port=settings.CHROMA_PORT)
+    client = _get_chroma_client()
 
     try:
         client.delete_collection(name=COLLECTION_NAME)
