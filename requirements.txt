@@ -11,4 +11,6 @@ streamlit
 python-dotenv
 openai
 requests
+langsmith
+langchain-text-splitters
 pytest
