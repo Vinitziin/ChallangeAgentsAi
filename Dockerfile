@@ -13,4 +13,4 @@ ENV PYTHONPATH=/workspace
 
 EXPOSE 8501
 
-CMD ["sh", "-c", "python -m vector_db.ingest || true && streamlit run app/main.py --server.address 0.0.0.0 --server.port 8501"]
+CMD ["sh", "-c", "python -m scripts.init_db || true && python -m vector_db.ingest || true && streamlit run app/main.py --server.address 0.0.0.0 --server.port 8501"]
